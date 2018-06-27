@@ -47,6 +47,9 @@ class PaSwitchGitHubAccount2018CS:Form{
 			btnCommand[i].Dock = DockStyle.Fill;
 			btnCommand[i].Anchor = as1;
 
+			// btnCommand[i].Click += delegate(object sender, EventArgs e){};
+			btnCommand[i].Click += new EventHandler(btnCommand_OnClick);
+
 			this.tlp.Controls.Add(btnCommand[i], 0, i);
 		}
 
@@ -57,6 +60,22 @@ class PaSwitchGitHubAccount2018CS:Form{
 		this.ResumeLayout(false);
 		this.tlp.Dock = DockStyle.Fill;
 
+	}
+
+	private void btnCommand_OnClick(object sender, EventArgs e){
+		Button btnSender = (Button)sender;
+		int nCode = -1;
+		for(int i = 0; i < nCommandCount; i++){
+			if(btnSender == btnCommand[i]){
+				nCode = i;
+				break;
+			}
+		}
+		switch(nCode){
+		default:
+			MessageBox.Show(nCode.ToString());
+			break;
+		}
 	}
 
 	public static void Main(string[] args){
