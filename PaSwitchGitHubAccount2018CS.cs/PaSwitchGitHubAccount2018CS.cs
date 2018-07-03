@@ -6,13 +6,22 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Text;
 using System.Security.Cryptography;
-
+using System.Configuration;
+using System.Web.Script.Serialization;
 
 class PaSwitchGitHubAccount2018CS:Form{
+	private const string strConfigFile = "PaSwitchGitHubAccount2018CS.exe.config";
+	// private Configuration config = ConfigurationManager.OpenExeConfiguration(strConfigFile);
+	private JavaScriptSerializer jss = new JavaScriptSerializer();
+
+	private GitHubAccountEntity[] configJson;
+	private int configJsonCount = 0;
+
 	private TableLayoutPanel tlp = new TableLayoutPanel();
 	private AnchorStyles as1 = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom) | AnchorStyles.Left) | AnchorStyles.Right)));
 	private const int nCommandCount = 4;
 	private Button[] btnCommand = new Button[nCommandCount];
+	private string[] A_strGitConfigFiles = {".gitconfig", ".git-credentials"};
 
 	private string strFolderUserProfile = Environment.GetEnvironmentVariable("USERPROFILE") + Path.DirectorySeparatorChar;
 
@@ -39,17 +48,36 @@ class PaSwitchGitHubAccount2018CS:Form{
 		this.StartPosition = FormStartPosition.CenterScreen;
 		// this.MinimumSize = new Size(400, 450);
 
-		Console.WriteLine( "USERPROFILE = " + strFolderUserProfile );
+		// Console.WriteLine( "USERPROFILE = " + strFolderUserProfile );
 
-		string strGitConfig = ReadTextFile(strFolderUserProfile + ".gitconfig");
-		string strEncrypt = AESEncrypt( strGitConfig );
+		// string strGitConfig = ReadTextFile(strFolderUserProfile + A_strGitConfigFiles[0]);
+		// string strEncrypt = AESEncrypt( strGitConfig );
 		
-		// Console.WriteLine(strGitConfig);
-		Console.WriteLine( strEncrypt );
+		// // Console.WriteLine(strGitConfig);
+		// Console.WriteLine( strEncrypt );
 
-		strGitConfig = ReadTextFile(strFolderUserProfile + ".git-credentials");
-		strEncrypt = AESEncrypt( strGitConfig );
-		Console.WriteLine( strEncrypt );
+		// strGitConfig = ReadTextFile(strFolderUserProfile + A_strGitConfigFiles[0]);
+		// strEncrypt = AESEncrypt( strGitConfig );
+		// Console.WriteLine( strEncrypt );
+
+		// strGitConfig = ReadTextFile("PaSwitchGitHubAccount2018CS.json");
+		// strEncrypt = AESEncrypt( strGitConfig );
+		// Console.WriteLine( strEncrypt );
+
+		try{
+			string configData = AESDecrypt( ConfigurationManager.AppSettings["configData"] );
+
+			configJson = jss.Deserialize<GitHubAccountEntity[]>(configData);
+			configJsonCount = configJson.Length;
+
+			// Console.WriteLine( configJson.Length );
+			// Console.WriteLine( configJson[0].strFolder );
+			// Console.WriteLine( configJson[1].strFolder );
+
+			// Console.WriteLine( configData );
+		}catch(Exception ex){
+			MessageBox.Show("Exception: " + ex.Message);
+		}
 
 		initUI();
 	}
@@ -71,6 +99,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 			btnCommand[i] = new Button();
 			btnCommand[i].Anchor = as1;
 			btnCommand[i].Dock = DockStyle.Fill;
+			btnCommand[i].BackColor = Color.FromArgb(204, 204, 204); // #ccc
 
 			btnCommand[i].Text = "asm32cn@github.com";
 
@@ -89,6 +118,46 @@ class PaSwitchGitHubAccount2018CS:Form{
 
 	}
 
+	private void PA_WriteTextFile(string strFile, string strContent){
+		try{
+			StreamWriter sw = new StreamWriter(strFile);
+			sw.Write(strContent);
+			sw.Flush();
+			sw.Close();
+		}catch(Exception ex){
+			MessageBox.Show("Exception: " + ex.Message);
+		}
+	}
+
+	private void PA_WriteGitConfig(int n){
+		if(configJsonCount >= 2){
+			string strContent = string.Format(
+				"[user]\n\tname = {0}\n\temail = {1}\n[credential]\n\thelper = store\n",
+				configJson[n].strUserName, configJson[n].strUserEmail
+			);
+			PA_WriteTextFile(strFolderUserProfile + A_strGitConfigFiles[0], strContent);
+
+			strContent = configJson[n].strUserCredential + "\n";
+			for(int i = 0; i < configJsonCount; i++){
+				if(i != n){
+					strContent += configJson[i].strUserCredential + "\n";
+				}
+			}
+			PA_WriteTextFile(strFolderUserProfile + A_strGitConfigFiles[1], strContent);
+
+		}else{
+			MessageBox.Show("no config data");
+		}
+	}
+
+	private void PA_ExplorerFolder(int n){
+		if(configJsonCount >= 2){
+			System.Diagnostics.Process.Start(configJson[n].strFolder);
+		}else{
+			MessageBox.Show("no config data");
+		}
+	}
+
 	private void btnCommand_OnClick(object sender, EventArgs e){
 		Button btnSender = (Button)sender;
 		int nCode = -1;
@@ -99,6 +168,18 @@ class PaSwitchGitHubAccount2018CS:Form{
 			}
 		}
 		switch(nCode){
+		case 0:
+			PA_WriteGitConfig(0);
+			break;
+		case 1:
+			PA_WriteGitConfig(1);
+			break;
+		case 2:
+			PA_ExplorerFolder(0);
+			break;
+		case 3:
+			PA_ExplorerFolder(1);
+			break;
 		default:
 			MessageBox.Show(nCode.ToString());
 			break;
@@ -133,3 +214,22 @@ class PaSwitchGitHubAccount2018CS:Form{
 		Application.Run(new PaSwitchGitHubAccount2018CS());
 	}
 }
+
+class GitHubAccountEntity{
+	public string strFolder;
+	public string strUserName;
+	public string strUserTitle;
+	public string strUserEmail;
+	public string strUserCredential;
+
+	public GitHubAccountEntity(){}
+
+	public GitHubAccountEntity(string strFolder, string strUserName,
+			string strUserTitle, string strUserEmail, string strUserCredential){
+		this.strFolder         = strFolder;
+		this.strUserName       = strUserName;
+		this.strUserTitle      = strUserTitle;
+		this.strUserEmail      = strUserEmail;
+		this.strUserCredential = strUserCredential;
+	}
+};
