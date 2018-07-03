@@ -10,8 +10,6 @@ using System.Configuration;
 using System.Web.Script.Serialization;
 
 class PaSwitchGitHubAccount2018CS:Form{
-	private const string strConfigFile = "PaSwitchGitHubAccount2018CS.exe.config";
-	// private Configuration config = ConfigurationManager.OpenExeConfiguration(strConfigFile);
 	private JavaScriptSerializer jss = new JavaScriptSerializer();
 
 	private GitHubAccountEntity[] configJson;
@@ -22,6 +20,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 	private const int nCommandCount = 4;
 	private Button[] btnCommand = new Button[nCommandCount];
 	private string[] A_strGitConfigFiles = {".gitconfig", ".git-credentials"};
+	private string[] A_strButtonTexts = {"asm32cn@github.com", "asm32cn@github.com", "asm32cn@github.com", "asm32cn@github.com"};
 
 	private string strFolderUserProfile = Environment.GetEnvironmentVariable("USERPROFILE") + Path.DirectorySeparatorChar;
 
@@ -46,35 +45,19 @@ class PaSwitchGitHubAccount2018CS:Form{
 	public PaSwitchGitHubAccount2018CS(){
 		this.Text = "PaSwitchGitHubAccount2018CS.cs";
 		this.StartPosition = FormStartPosition.CenterScreen;
-		// this.MinimumSize = new Size(400, 450);
-
-		// Console.WriteLine( "USERPROFILE = " + strFolderUserProfile );
-
-		// string strGitConfig = ReadTextFile(strFolderUserProfile + A_strGitConfigFiles[0]);
-		// string strEncrypt = AESEncrypt( strGitConfig );
-		
-		// // Console.WriteLine(strGitConfig);
-		// Console.WriteLine( strEncrypt );
-
-		// strGitConfig = ReadTextFile(strFolderUserProfile + A_strGitConfigFiles[0]);
-		// strEncrypt = AESEncrypt( strGitConfig );
-		// Console.WriteLine( strEncrypt );
-
-		// strGitConfig = ReadTextFile("PaSwitchGitHubAccount2018CS.json");
-		// strEncrypt = AESEncrypt( strGitConfig );
-		// Console.WriteLine( strEncrypt );
 
 		try{
 			string configData = AESDecrypt( ConfigurationManager.AppSettings["configData"] );
 
 			configJson = jss.Deserialize<GitHubAccountEntity[]>(configData);
 			configJsonCount = configJson.Length;
+			if(configJsonCount == 2){
+				A_strButtonTexts[0] = configJson[0].strUserTitle;
+				A_strButtonTexts[1] = configJson[1].strUserTitle;
+				A_strButtonTexts[2] = configJson[0].strFolder;
+				A_strButtonTexts[3] = configJson[1].strFolder;
+			}
 
-			// Console.WriteLine( configJson.Length );
-			// Console.WriteLine( configJson[0].strFolder );
-			// Console.WriteLine( configJson[1].strFolder );
-
-			// Console.WriteLine( configData );
 		}catch(Exception ex){
 			MessageBox.Show("Exception: " + ex.Message);
 		}
@@ -101,7 +84,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 			btnCommand[i].Dock = DockStyle.Fill;
 			btnCommand[i].BackColor = Color.FromArgb(204, 204, 204); // #ccc
 
-			btnCommand[i].Text = "asm32cn@github.com";
+			btnCommand[i].Text = A_strButtonTexts[i];
 
 			// btnCommand[i].Click += delegate(object sender, EventArgs e){};
 			btnCommand[i].Click += new EventHandler(btnCommand_OnClick);
