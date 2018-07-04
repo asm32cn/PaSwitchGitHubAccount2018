@@ -19,6 +19,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 
 	private TableLayoutPanel tlp = new TableLayoutPanel();
 	private AnchorStyles as1 = ((AnchorStyles)((((AnchorStyles.Top | AnchorStyles.Bottom) | AnchorStyles.Left) | AnchorStyles.Right)));
+	private const int nConfigCount = 3;
 	private const int nCommandCount = 6;
 	private Button[] btnCommand = new Button[nCommandCount];
 	private string[] A_strGitConfigFiles = {".gitconfig", ".git-credentials"};
@@ -27,7 +28,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 	private string strFolderUserProfile = Environment.GetEnvironmentVariable("USERPROFILE") + Path.DirectorySeparatorChar;
 
 	protected override Size DefaultSize {
-		get{ return new Size(300, 420); }
+		get{ return new Size(300, 360); }
 	}
 
 	public string ReadTextFile(string strFile){
@@ -47,6 +48,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 	public PaSwitchGitHubAccount2018CS(){
 		this.Text = "PaSwitchGitHubAccount2018CS.cs";
 		this.StartPosition = FormStartPosition.CenterScreen;
+		this.MinimumSize = new Size(300, 360);
 
 		try{
 			string configData = AESDecrypt( ConfigurationManager.AppSettings["configData"] );
@@ -61,7 +63,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 
 			configJson = jss.Deserialize<GitHubAccountEntity[]>(configData);
 			configJsonCount = configJson.Length;
-			if(configJsonCount == 3){
+			if(configJsonCount == nConfigCount){
 				A_strButtonTexts[0] = configJson[0].strUserTitle;
 				A_strButtonTexts[1] = configJson[1].strUserTitle;
 				A_strButtonTexts[2] = configJson[2].strUserTitle;
@@ -83,7 +85,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 
 		this.tlp.Anchor = as1;
 		this.tlp.ColumnCount = 1;
-		this.tlp.RowCount = 6;
+		this.tlp.RowCount = nCommandCount;
 		this.tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 
 		for(int i = 0; i < nCommandCount; i++){
@@ -125,7 +127,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 	}
 
 	private void PA_WriteGitConfig(int n){
-		if(configJsonCount >= 3){
+		if(configJsonCount >= nConfigCount){
 			string strContent = string.Format(
 				"[user]\n\tname = {0}\n\temail = {1}\n[credential]\n\thelper = store\n",
 				configJson[n].strUserName, configJson[n].strUserEmail
@@ -149,7 +151,7 @@ class PaSwitchGitHubAccount2018CS:Form{
 	}
 
 	private void PA_ExplorerFolder(int n){
-		if(configJsonCount >= 3){
+		if(configJsonCount >= nConfigCount){
 			System.Diagnostics.Process.Start(configJson[n].strFolder);
 		}else{
 			MessageBox.Show("no config data");
