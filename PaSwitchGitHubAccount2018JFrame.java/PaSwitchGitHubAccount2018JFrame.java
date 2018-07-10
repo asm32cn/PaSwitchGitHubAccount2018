@@ -8,6 +8,15 @@ import java.awt.event.ActionListener;
 import java.awt.*;
 import javax.swing.JFrame;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+
+
 import javax.swing.JOptionPane;
 
 class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
