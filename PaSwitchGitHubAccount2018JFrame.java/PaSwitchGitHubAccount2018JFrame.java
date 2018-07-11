@@ -28,6 +28,21 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 		"E:\\git-folder\\git-account1", "E:\\git-folder\\git-account2", "E:\\git-folder\\git-account3"};
 	private Button[] buttons = new Button[nCount];
 
+	private static final String strConfigFile = "PaSwitchGitHubAccount2018JFrame.config.xml";
+
+	private static DocumentBuilderFactory dbFactory = null;
+	private static DocumentBuilder db = null;
+	private Document document = null;
+	private NodeList accountList = null;
+	static{
+		try{
+			dbFactory = DocumentBuilderFactory.newInstance();
+			db = dbFactory.newDocumentBuilder();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+
 	public PaSwitchGitHubAccount2018JFrame(){
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setTitle(strWindowTitle);
@@ -52,6 +67,16 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 		gbc.gridheight = 1;
 
 		Color btnBackColor = new Color(204, 204, 204);
+
+		try{
+			document = db.parse(strConfigFile);
+			accountList = document.getElementsByTagName("account");
+
+			log("account = " + accountList.getLength());
+
+		}catch(Exception ex){
+			log("exception: " + ex.getMessage());
+		}
 
 		for(int i = 0; i < nCount; i++){
 			buttons[i] = new Button( buttonsText[i] );
