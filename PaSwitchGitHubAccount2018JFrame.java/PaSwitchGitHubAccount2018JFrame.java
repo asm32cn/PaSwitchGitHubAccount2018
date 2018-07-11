@@ -16,7 +16,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
-
 import javax.swing.JOptionPane;
 
 class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
@@ -26,14 +25,18 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 	private GridBagConstraints gbc = new GridBagConstraints();
 	private String[] buttonsText = {"account1@github.com", "account2@github.com", "account3@github.com",
 		"E:\\git-folder\\git-account1", "E:\\git-folder\\git-account2", "E:\\git-folder\\git-account3"};
+	private String[] gitUserFiles = {".gitconfig", ".git-credentials"};
 	private Button[] buttons = new Button[nCount];
 
 	private static final String strConfigFile = "PaSwitchGitHubAccount2018JFrame.config.xml";
+	private static final String strFolderUserProfile = System.getenv().get("USERPROFILE") + File.separator;
 
 	private static DocumentBuilderFactory dbFactory = null;
 	private static DocumentBuilder db = null;
 	private Document document = null;
 	private NodeList accountList = null;
+	private NamedNodeMap[] namedNodeMap = null;
+	private int nConfigCount = 0;
 	static{
 		try{
 			dbFactory = DocumentBuilderFactory.newInstance();
@@ -54,6 +57,18 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 
 		this.setVisible(true);
 	}
+
+	private String getAttribute(NamedNodeMap nnp, String strKey){
+		String sValue = null;
+		if(nnp != null){
+			org.w3c.dom.Node node = nnp.getNamedItem(strKey);
+			if(node != null){
+				sValue = node.getTextContent();
+			}
+		}
+		return sValue;
+	}
+
 	public void initUI(){
 		gbc.fill = GridBagConstraints.BOTH;
 		setLayout(new GridBagLayout());
@@ -71,8 +86,20 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 		try{
 			document = db.parse(strConfigFile);
 			accountList = document.getElementsByTagName("account");
+			nConfigCount = accountList.getLength();
 
-			log("account = " + accountList.getLength());
+			// log("nConfigCount = " + nConfigCount);
+			if(nConfigCount == 3){
+				namedNodeMap = new NamedNodeMap[nConfigCount];
+				for(int i = 0; i < nConfigCount; i++){
+					// org.w3c.dom.Node node = accountList.item(i);
+					namedNodeMap[i] = accountList.item(i).getAttributes();
+					// log( getAttribute(namedNodeMap[i], "strUserFolder") );
+
+					buttonsText[i] = getAttribute(namedNodeMap[i], "strUserTitle");
+					buttonsText[i + 3] = getAttribute(namedNodeMap[i], "strUserFolder");
+				}
+			}
 
 		}catch(Exception ex){
 			log("exception: " + ex.getMessage());
@@ -98,33 +125,86 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 				break;
 			}
 		}
-		if(nSelected >= 3 && nSelected <= 6){
-			// try {
-			// 	String strCommand = "start E:\\git-folder\\git-asm32cn";
-			// 	Process process = Runtime.getRuntime().exec(strCommand);  
-			// 	int exitValue = process.waitFor();  
-			// 	if (0 != exitValue) {  
-			// 		log("call shell failed. error code is :" + exitValue);  
-			// 	}  
-			// } catch (Throwable ex) {  
-			// 	log("call shell failed. " + ex);  
-			// } 
 
-			try {
-				java.awt.Desktop.getDesktop().open(new File( buttonsText[nSelected] ));
-			} catch (Exception e) {
-				MessageBox(e.getMessage());
+		if(nConfigCount < 3){
+			messageBox("nConfigCount = " + nConfigCount + " ( < 3 )");
+			return;
+		}
+		try {
+			String strFolder = null;
+
+			// log("nSelected = " + nSelected);
+
+			if(nSelected >= 0 && nSelected < 3){
+
+				// strFolder = System.getenv().get("USERPROFILE") + File.separator;
+				strFolder = strFolderUserProfile;
+				// log("strFolder = " + strFolder);
+
+				String strContent = java.text.MessageFormat.format(
+					"[user]\n\tname = {0}\n\temail = {1}\n[credential]\n\thelper = store\n",
+					getAttribute(namedNodeMap[nSelected], "strUserName"),
+					getAttribute(namedNodeMap[nSelected], "strUserEmail")
+				);
+
+				if( ! writeTextFile(strFolderUserProfile + gitUserFiles[0], strContent) ){
+					messageBox("Write " + gitUserFiles[0] + " fail.");
+				}
+
+				strContent = getAttribute(namedNodeMap[nSelected], "strUserCredential") + "\n";
+				for(int i = 0; i < nConfigCount; i++){
+					if(i != nSelected){
+						strContent += getAttribute(namedNodeMap[i], "strUserCredential") + "\n";
+					}
+				}
+				if( ! writeTextFile(strFolderUserProfile + gitUserFiles[1], strContent) ){
+					messageBox("Write " + gitUserFiles[1] + " fail.");
+				}
+
+				// log("strContent = " + strContent);
+
+			}else if(nSelected <= 6){
+				// try {
+				// 	String strCommand = "start E:\\git-folder\\git-asm32cn";
+				// 	Process process = Runtime.getRuntime().exec(strCommand);  
+				// 	int exitValue = process.waitFor();  
+				// 	if (0 != exitValue) {  
+				// 		log("call shell failed. error code is :" + exitValue);  
+				// 	}  
+				// } catch (Throwable ex) {  
+				// 	log("call shell failed. " + ex);  
+				// } 
+
+				strFolder = getAttribute(namedNodeMap[nSelected - 3], "strUserFolder");
+				java.awt.Desktop.getDesktop().open(new File( strFolder ));
+
 			}
-
+		} catch (Exception e) {
+			messageBox("Exception: " + e.getMessage());
 		}
 	}
 
-	private void MessageBox(String s){
+	private void messageBox(String s){
 		JOptionPane.showMessageDialog(this, s, strWindowTitle, JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private void log(String s){
 		System.out.println(s);
+	}
+
+	private boolean writeTextFile(String strFile, String strContent){
+		File file = new File(strFile);
+		try(FileOutputStream fop = new FileOutputStream(file)){
+			if(!file.exists()){ file.createNewFile(); }
+			if(strContent != null){
+				fop.write( strContent.getBytes() );
+			}
+			fop.flush();
+			fop.close();
+		}catch(IOException ex){
+			return false;
+		}
+		return true;
 	}
 
 	public static void main(String[] args){
