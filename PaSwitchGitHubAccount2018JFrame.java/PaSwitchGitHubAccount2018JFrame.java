@@ -53,6 +53,7 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 		this.setLocationRelativeTo(null);
 		this.setMinimumSize(new Dimension(300, 360));
 
+		loadConfig();
 		initUI();
 
 		this.setVisible(true);
@@ -69,24 +70,23 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 		return sValue;
 	}
 
-	public void initUI(){
-		gbc.fill = GridBagConstraints.BOTH;
-		setLayout(new GridBagLayout());
-
-		gbc.insets = new Insets(5, 5, 5, 5);
-		gbc.weightx = 10;
-		gbc.weighty = 10;
-		gbc.gridx = 0;
-		// gbc.gridy = 0;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-
-		Color btnBackColor = new Color(204, 204, 204);
+	public void loadConfig(){
+		String xmlData = null;
 
 		try{
 			document = db.parse(strConfigFile);
 			accountList = document.getElementsByTagName("account");
 			nConfigCount = accountList.getLength();
+
+			try{
+				xmlData = document
+					.getElementsByTagName("config") // NodeList
+					.item(0)                        // org.w3c.dom.Node
+					.getAttributes()                // NamedNodeMap
+					.getNamedItem("xmlData")        // org.w3c.dom.Node
+					.getTextContent();              // String
+				// log(xmlData);
+			}catch(Exception ex){}
 
 			// log("nConfigCount = " + nConfigCount);
 			if(nConfigCount == 3){
@@ -104,6 +104,22 @@ class PaSwitchGitHubAccount2018JFrame extends JFrame implements ActionListener{
 		}catch(Exception ex){
 			log("exception: " + ex.getMessage());
 		}
+	}
+
+	public void initUI(){
+		gbc.fill = GridBagConstraints.BOTH;
+		setLayout(new GridBagLayout());
+
+		gbc.insets = new Insets(5, 5, 5, 5);
+		gbc.weightx = 10;
+		gbc.weighty = 10;
+		gbc.gridx = 0;
+		// gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+
+		Color btnBackColor = new Color(204, 204, 204);
+
 
 		for(int i = 0; i < nCount; i++){
 			buttons[i] = new Button( buttonsText[i] );
