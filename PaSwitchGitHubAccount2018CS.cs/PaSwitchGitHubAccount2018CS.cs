@@ -205,23 +205,23 @@ class PaSwitchGitHubAccount2018CS:Form{
 	public static string keys = "1a2s3d4f5g6h7j8k";//密钥,128位  
 
 	public string AESEncrypt(string plainText){
-			SymmetricAlgorithm des = Rijndael.Create();
-			byte[] inputByteArray = Encoding.UTF8.GetBytes(plainText);		
-			des.Key = Encoding.UTF8.GetBytes(keys);
-			des.IV = _key1;
+		SymmetricAlgorithm des = Rijndael.Create();
+		byte[] inputByteArray = Encoding.UTF8.GetBytes(plainText);		
+		des.Key = Encoding.UTF8.GetBytes(keys);
+		des.IV = _key1;
 
-			ICryptoTransform cTransform = des.CreateEncryptor();
-			return Convert.ToBase64String( cTransform.TransformFinalBlock(inputByteArray, 0, inputByteArray.Length) );
+		ICryptoTransform cTransform = des.CreateEncryptor();
+		return Convert.ToBase64String( cTransform.TransformFinalBlock(inputByteArray, 0, inputByteArray.Length) );
 	}
 
 	public string AESDecrypt(string cipherText){
-			SymmetricAlgorithm des = Rijndael.Create();
-			des.Key = Encoding.UTF8.GetBytes(keys);
-			des.IV = _key1;
+		SymmetricAlgorithm des = Rijndael.Create();
+		des.Key = Encoding.UTF8.GetBytes(keys);
+		des.IV = _key1;
 
-			ICryptoTransform cTransform = des.CreateDecryptor();
-			byte[] data = Convert.FromBase64String(cipherText);
-			return System.Text.Encoding.UTF8.GetString( cTransform.TransformFinalBlock(data, 0, data.Length) );
+		ICryptoTransform cTransform = des.CreateDecryptor();
+		byte[] data = Convert.FromBase64String(cipherText);
+		return System.Text.Encoding.UTF8.GetString( cTransform.TransformFinalBlock(data, 0, data.Length) );
 	}
 
 
