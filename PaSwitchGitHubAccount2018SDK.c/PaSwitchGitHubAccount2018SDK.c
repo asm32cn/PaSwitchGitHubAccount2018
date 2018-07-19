@@ -74,8 +74,6 @@ int WINAPI WinMain(HINSTANCE hThisInst,HINSTANCE hPrevInst,
 //该函数被 Windows 98 调用，可以从消息队列中传递消息
 LRESULT CALLBACK WindowFunc(HWND hwnd, UINT message,
 							WPARAM wParam, LPARAM lParam){
-	RECT rect;
-	int m_nWidth, m_nHeight;
 	switch(message){
 	case WM_DESTROY: //终止进程
 		PostQuitMessage(0);
@@ -83,6 +81,8 @@ LRESULT CALLBACK WindowFunc(HWND hwnd, UINT message,
 
 	case WM_CREATE:
 	case WM_SIZE:{
+			RECT rect;
+			int m_nWidth, m_nHeight;
 			GetClientRect(hwnd, &rect);
 			m_nWidth = rect.right - rect.left - 20;
 			m_nHeight = (rect.bottom - rect.top - 20) / 6 - 5;
